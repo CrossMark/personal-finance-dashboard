@@ -66,13 +66,20 @@ def create_db_engine(connection_string='sqlite:///database.db'):
 def write_to_db(df, sql_engine, table_name='funds'):
     """Write a dataframe to a database, with a default table name 'funds'."""
     try:
-        df.to_sql(table_name, con=sql_engine)
+        df.to_sql(table_name, con=sql_engine, if_exists='append', index=False)
         print("Fund prices succesfully written to the database.")
     except:
         print("Something went wrong when writing fund prices to the database.")
 
 def main():
-    funds_to_scrape_lst = [] # add fund codes here
+    # F0000152HT - NN (L) Climate & Environment- N Dis EUR
+    # F00000QLRL - NN (L) Global Eq Impact Opportunities N Cap EUR
+    # F00000X99D - NN (L) Green Bond N Cap EUR	
+    # F0000152ID - NN (L) Health and Well-being N Dis EUR
+    # F0000152IE - NN (L) Smart Connectivity N Dis EUR
+    # F0GBR04FE4 - NN Global Sustainable Opportunities Fund
+
+    funds_to_scrape_lst = ['F0000152HT', 'F00000QLRL', 'F00000X99D', 'F0000152ID', 'F0000152IE', 'F0GBR04FE4']
     df_funds = scrape_funds(funds_to_scrape_lst)
     engine = create_db_engine() # add db connection string here
     write_to_db(df_funds, engine)
