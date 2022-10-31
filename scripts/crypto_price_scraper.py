@@ -6,7 +6,7 @@ This script can be used to scrape cryptocurrency prices (in EUR) from Bitvavo.
 import pandas as pd
 import requests
 import datetime
-import sqlalchemy as sql
+from os import getenv
 
 def request_prices(market_list):
     """
@@ -39,27 +39,11 @@ def request_prices(market_list):
         response_list.append(response_dict)
     
     df_crypto = pd.DataFrame.from_records(response_list)
-    return df_crypto        
+    return df_crypto
 
-def create_db_engine(connection_string='sqlite:///database.db'):
-    """Return a database engine, with sqlite database as default."""
-    engine = sql.create_engine(connection_string)
-    return engine
-
-def write_to_db(df, sql_engine, table_name='crypto'):
-    """Write a dataframe to a database, with a default table name 'funds'."""
-    try:
-        df.to_sql(table_name, con=sql_engine, if_exists='append', index=False)
-        print("Crypto prices succesfully written to the database.")
-    except:
-        print("Something went wrong when writing crypto prices to the database.")
-
-def main():
+def run(self):
     market_request_lst = ['BTC-EUR', 'ETH-EUR', 'ADA-EUR', 'XRP-EUR']
     df_crypto = request_prices(market_request_lst)
-    engine = create_db_engine() # add db connection string here
-    write_to_db(df_crypto, engine)
-
-
-if __name__ == '__main__':
-    main()
+    df_crypto['price'] = pd.to_numeric(df_crypto['price'])
+    df_crypto.to_gbq(destination_table=getenv('DESTINATION_TABLE'), project_id=getenv('PROJECT_ID'), if_exists='append')
+    return 'OK'
